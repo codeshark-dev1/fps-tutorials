@@ -82,7 +82,7 @@
                     "name": "Sprint",
                     "type": "Button",
                     "id": "641cd816-40e6-41b4-8c3d-04687c349290",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -90,7 +90,7 @@
                 {
                     "name": "Reload",
                     "type": "Button",
-                    "id": "1ce7e79a-12df-4bb9-bdb1-33a5cb0f1657",
+                    "id": "079e2cca-6a75-459a-9968-fea0a28d6b4f",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -485,7 +485,7 @@
                 },
                 {
                     "name": "",
-                    "id": "742141bf-cdaf-4412-9752-3cdde82b82b8",
+                    "id": "f0abad07-f562-4efc-a15d-c29321cbdf6a",
                     "path": "<Keyboard>/r",
                     "interactions": "",
                     "processors": "",
@@ -496,7 +496,7 @@
                 },
                 {
                     "name": "",
-                    "id": "48ac87b3-83dc-4bec-8640-59d5c0472835",
+                    "id": "a0bbe118-9d26-4183-8782-849e2b2798b1",
                     "path": "<Gamepad>/buttonWest",
                     "interactions": "",
                     "processors": "",
