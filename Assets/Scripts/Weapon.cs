@@ -4,88 +4,93 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(AudioSource))]
 public class Weapon : MonoBehaviour
 {
-    [SerializeField] private float Range = 100.0f;
-    [SerializeField] private LayerMask LayerMask;
+    [Header("Shooting")]
+[SerializeField] private float Range = 100.0f;
+[SerializeField] private LayerMask LayerMask;
 
-    [SerializeField] private bool IsSemiAutomatic = false;
+[SerializeField] private bool IsSemiAutomatic = false;
 
-    [SerializeField] private float ShootDelay = 0.3f;
-    private float nextShootTime;
+[SerializeField] private float ShootDelay = 0.3f;
+private float nextShootTime;
 
-    private Camera mainCamera;
-    private InputAction inputAction;
+[SerializeField] private int Damage = 20;
 
-    [SerializeField] private AudioClip ShootSound;
-    private AudioSource audioSource;
+private Camera mainCamera;
+private InputAction shootAction;
 
-    [SerializeField] private ParticleSystem MuzzleFlash;
+[Header("Visuals and sound")]
+[SerializeField] private AudioClip ShootSound;
+private AudioSource audioSource;
 
-    [SerializeField] private GameObject ImpactEffect;
+[SerializeField] private ParticleSystem MuzzleFlash;
 
-    [SerializeField] private float RecoilKickBack = 0.08f;
-    [SerializeField] private float RecoilKickUp = 6.0f;
-    [SerializeField] private float RecoilReturnSpeed = 8.0f;
+[SerializeField] private GameObject ImpactEffect;
 
-    private Vector3 startPosition;
-    private Quaternion startRotation;
+[SerializeField] private float RecoilKickBack = 0.08f;
+[SerializeField] private float RecoilKickUp = 6.0f;
+[SerializeField] private float RecoilReturnSpeed = 8.0f;
 
-    private void Start()
-    {
-        mainCamera = GetComponentInParent<Camera>();
-        inputAction = InputSystem.actions.FindAction("Attack");
-        audioSource = GetComponent<AudioSource>();
+private Vector3 startPosition;
+private Quaternion startRotation;
 
-        startPosition = transform.localPosition;
-        startRotation = transform.localRotation;
+private void Start()
+{
+    mainCamera = GetComponentInParent<Camera>();
+    shootAction = InputSystem.actions.FindAction("Attack");
+    audioSource = GetComponent<AudioSource>();
 
-        inputAction.started += OnAttackButtonPressed;
-    }
+    startPosition = transform.localPosition;
+    startRotation = transform.localRotation;
 
-    private void Update()
-    {
-        if (!IsSemiAutomatic && inputAction.IsPressed())
-            Shoot();
+    shootAction.started += OnAttackButtonPressed;
+}
 
-        transform.localPosition = Vector3.Lerp(transform.localPosition, startPosition, RecoilReturnSpeed * Time.deltaTime);
-        transform.localRotation = Quaternion.Slerp(transform.localRotation, startRotation, RecoilReturnSpeed * Time.deltaTime);
-    }
+private void Update()
+{
+    if (!IsSemiAutomatic && shootAction.IsPressed())
+        Shoot();
 
-    private void OnAttackButtonPressed(InputAction.CallbackContext _)
-    {
-        if (IsSemiAutomatic)
-            Shoot();
-    }
+    transform.localPosition = Vector3.Lerp(transform.localPosition, startPosition, RecoilReturnSpeed * Time.deltaTime);
+    transform.localRotation = Quaternion.Slerp(transform.localRotation, startRotation, RecoilReturnSpeed * Time.deltaTime);
+}
 
-    private void OnDestroy()
-    {
-        inputAction.started -= OnAttackButtonPressed;
-    }
+private void OnAttackButtonPressed(InputAction.CallbackContext _)
+{
+    if (IsSemiAutomatic)
+        Shoot();
+}
 
-    private void Shoot()
-    {
-        if (Time.time < nextShootTime)
-            return;
+private void OnDestroy()
+{
+        shootAction.started -= OnAttackButtonPressed;
+}
 
-        audioSource.pitch = Random.Range(0.95f, 1.05f);
-        audioSource.PlayOneShot(ShootSound);
-        MuzzleFlash.Play();
+private void Shoot()
+{
+    if (Time.time < nextShootTime)
+        return;
 
-        transform.localPosition -= new Vector3(0, 0, RecoilKickBack);
-        transform.localRotation *= Quaternion.Euler(-RecoilKickUp, 0, 0);
+    PlayShootEffects();
+    nextShootTime = Time.time + ShootDelay;
 
-        nextShootTime = Time.time + ShootDelay;
+    RaycastHit hit;
+    if (!Physics.Raycast(mainCamera.transform.position, mainCamera.transform.forward, out hit, Range, LayerMask))
+        return;
 
-        RaycastHit hit;
-        if (Physics.Raycast(mainCamera.transform.position, mainCamera.transform.forward, out hit, Range, LayerMask))
-        {
-            GameObject impact = Instantiate(ImpactEffect, hit.point, Quaternion.LookRotation(hit.normal));
-            Destroy(impact, 1.0f);
+    GameObject impact = Instantiate(ImpactEffect, hit.point, Quaternion.LookRotation(hit.normal));
+    Destroy(impact, 1.0f);
 
-            if (hit.collider.TryGetComponent(out Target target))
-            {
-                Debug.Log($"Hit target {target.name}");
-                target.TakeDamage(20);
-            }
-        }
-    }
+    if (hit.collider.TryGetComponent(out Target target))
+        target.TakeDamage(Damage);
+}
+
+private void PlayShootEffects()
+{
+    audioSource.pitch = Random.Range(0.95f, 1.05f);
+    audioSource.PlayOneShot(ShootSound);
+    MuzzleFlash.Play();
+
+    transform.localPosition -= new Vector3(0, 0, RecoilKickBack);
+    transform.localRotation *= Quaternion.Euler(-RecoilKickUp, 0, 0);
+}
 }
